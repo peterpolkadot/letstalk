@@ -1,2 +1,2 @@
-# Chatbot City ?
-A dynamic chatbot directory built with Next.js 14 + Tailwind + Supabase (stubbed).
+# Chatbot City 🤖
+Dynamic chatbot directory using Next.js + Tailwind + Supabase.
