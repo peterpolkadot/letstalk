@@ -13,14 +13,11 @@ export default function Home() {
     const supabase = getSupabase();
 
     async function fetchData() {
-      // 🗂️ Load categories and bots
       const { data: catsData } = await supabase.from('categories').select('*');
       const { data: botsData } = await supabase.from('bots').select('*');
-
       setCategories(catsData || []);
       setBots(botsData || []);
 
-      // 🔥 Fetch trending analytics from API
       try {
         const res = await fetch('/api/analytics');
         const json = await res.json();
@@ -35,9 +32,6 @@ export default function Home() {
     fetchData();
   }, []);
 
-  const getBotCount = (categoryId) =>
-    bots.filter((bot) => bot.category_id === categoryId).length;
-
   if (loading) {
     return (
       <Layout>
@@ -49,11 +43,37 @@ export default function Home() {
     );
   }
 
-  // Helper: find bot details by alias
-  const getBot = (alias) => bots.find((b) => b.alias === alias);
+  // 🧮 Compute total messages per category
+  const categoryActivity = {};
+  trending.forEach((t) => {
+    const bot = bots.find((b) => b.alias === t.bot_alias);
+    if (bot && bot.category_id) {
+      if (!categoryActivity[bot.category_id]) categoryActivity[bot.category_id] = 0;
+      categoryActivity[bot.category_id] += t.messages_24h;
+    }
+  });
+
+  // 🏆 Find top 3 hot categories by total messages
+  const topCategories = Object.entries(categoryActivity)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([id]) => Number(id));
 
   return (
     <Layout>
+      {/* 🔥 Animated Styles */}
+      <style jsx>{`
+        @keyframes glowPulse {
+          0%, 100% { box-shadow: 0 0 10px rgba(255, 150, 50, 0.5); }
+          50% { box-shadow: 0 0 25px rgba(255, 110, 0, 0.9); }
+        }
+        .hot-cat {
+          border: 2px solid rgba(255, 120, 30, 0.7);
+          animation: glowPulse 2.8s infinite ease-in-out;
+          background: linear-gradient(160deg, #fff8f3, #fffefb);
+        }
+      `}</style>
+
       {/* Hero Banner */}
       <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-xl p-6 mb-8 text-center">
         <h1 className="text-4xl font-bold mb-3">🤖 Chatbot City 🏙️</h1>
@@ -70,73 +90,47 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 🔥 Trending Bots */}
-      {trending.length > 0 && (
-        <div className="mb-10">
-          <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
-            🔥 Trending Bots (Past 24h)
-          </h2>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {trending.map((t) => {
-              const bot = getBot(t.bot_alias);
-              if (!bot) return null;
-              return (
-                <a
-                  key={bot.id}
-                  href={'/bot/' + bot.alias}
-                  className="p-5 border-2 border-gray-200 rounded-xl hover:border-purple-500 hover:shadow-lg transition-all"
-                >
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-3xl">{bot.emoji}</span>
-                    <div>
-                      <h3 className="font-bold text-lg">{bot.name}</h3>
-                      <p className="text-sm text-gray-500">
-                        {bot.tagline || ''}
-                      </p>
-                    </div>
+      {/* 🔥 Hot Categories Highlighted */}
+      <div className="mb-10">
+        <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
+          🗂️ Explore Categories
+        </h2>
+        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+          {categories.map((cat) => {
+            const isHot = topCategories.includes(cat.id);
+            const botCount = bots.filter((b) => b.category_id === cat.id).length;
+            const totalChats = categoryActivity[cat.id] || 0;
+
+            return (
+              <a
+                key={cat.id}
+                href={'/category/' + cat.slug}
+                className={`group relative p-6 border-2 border-gray-200 rounded-xl hover:shadow-lg transition-all text-center cursor-pointer ${isHot ? 'hot-cat' : 'hover:border-blue-500'}`}
+              >
+                {/* 🔥 Optional label */}
+                {isHot && (
+                  <div className="absolute top-2 right-2 bg-orange-100 text-orange-700 text-xs font-semibold px-2 py-1 rounded-full shadow-sm">
+                    🔥 {totalChats} chats
                   </div>
-                  <div className="mt-2 flex gap-4 text-sm text-gray-600">
-                    <div>💬 {t.messages_24h} chats</div>
-                    <div>👥 {t.users_24h} users</div>
-                  </div>
-                </a>
-              );
-            })}
-          </div>
+                )}
+                <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">
+                  {cat.emoji}
+                </div>
+                <div className="font-semibold text-lg mb-2">
+                  {cat.category_name}
+                </div>
+                <div className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
+                  {botCount} {botCount === 1 ? 'bot' : 'bots'}
+                </div>
+                <p className="text-xs text-gray-500 mt-3 line-clamp-2">
+                  {cat.description}
+                </p>
+              </a>
+            );
+          })}
         </div>
-      )}
-
-      {/* 🗂️ Category Grid */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-semibold mb-4">Explore Categories</h2>
-      </div>
-      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-        {categories.map((cat) => {
-          const botCount = getBotCount(cat.id);
-          return (
-            <a
-              key={cat.id}
-              href={'/category/' + cat.slug}
-              className="group relative p-6 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-lg transition-all cursor-pointer text-center"
-            >
-              <div className="text-4xl mb-3 group-hover:scale-110 transition-transform">
-                {cat.emoji}
-              </div>
-              <div className="font-semibold text-lg mb-2">
-                {cat.category_name}
-              </div>
-              <div className="inline-block px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium">
-                {botCount} {botCount === 1 ? 'bot' : 'bots'}
-              </div>
-              <p className="text-xs text-gray-500 mt-3 line-clamp-2">
-                {cat.description}
-              </p>
-            </a>
-          );
-        })}
       </div>
 
-      {/* Footer note */}
       <div className="mt-12 text-center text-gray-500 text-sm">
         <p>
           Discover AI chatbots across {categories.length} specialized categories
