@@ -1,8 +1,7 @@
 
 /**
- * 📊 Analytics API
- * Returns trending bots or individual bot stats from Supabase.
- * Used for home page “🔥 Trending Bots” and per-bot badges.
+ * ⚡ Live Analytics API (no materialized view)
+ * Always up-to-date — directly queries chat_messages for the past 24h.
  */
 import { getSupabase } from '../../lib/supabaseClient';
 
@@ -11,26 +10,57 @@ export default async function handler(req, res) {
     const supabase = getSupabase();
     const { botAlias } = req.query;
 
-    // If a bot alias is given → return that bot’s stats
+    // 24-hour window ISO timestamp
+    const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
     if (botAlias) {
+      // 🔍 Return stats for a specific bot
       const { data, error } = await supabase
-        .from('bot_trends')
-        .select('*')
+        .from('chat_messages')
+        .select('bot_alias, user_id, created_at')
         .eq('bot_alias', botAlias)
-        .maybeSingle();
+        .gte('created_at', since);
+
       if (error) throw error;
-      return res.status(200).json({ stats: data });
+
+      const messages_24h = data.length;
+      const users_24h = new Set(data.map(m => m.user_id)).size;
+
+      return res.status(200).json({
+        stats: { bot_alias: botAlias, messages_24h, users_24h }
+      });
     }
 
-    // Otherwise → return top 10 trending bots
+    // 🔥 Trending bots — grouped counts
     const { data, error } = await supabase
-      .from('bot_trends')
-      .select('*')
-      .order('messages_24h', { ascending: false })
-      .limit(10);
+      .from('chat_messages')
+      .select('bot_alias, user_id, created_at')
+      .gte('created_at', since);
+
     if (error) throw error;
 
-    return res.status(200).json({ trending: data });
+    // Aggregate manually (client-side)
+    const aggregates = {};
+    data.forEach(row => {
+      const alias = row.bot_alias;
+      if (!aggregates[alias]) {
+        aggregates[alias] = { bot_alias: alias, messages_24h: 0, users: new Set() };
+      }
+      aggregates[alias].messages_24h++;
+      aggregates[alias].users.add(row.user_id);
+    });
+
+    // Format + sort
+    const trending = Object.values(aggregates)
+      .map(r => ({
+        bot_alias: r.bot_alias,
+        messages_24h: r.messages_24h,
+        users_24h: r.users.size
+      }))
+      .sort((a, b) => b.messages_24h - a.messages_24h)
+      .slice(0, 10);
+
+    return res.status(200).json({ trending });
   } catch (err) {
     console.error('Analytics API error:', err);
     return res.status(500).json({ error: 'Failed to load analytics.' });
