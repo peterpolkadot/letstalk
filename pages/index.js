@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { getSupabase } from '../lib/supabaseClient';
 import Layout from '../components/Layout';
 
 export default function Home() {
   const [categories, setCategories] = useState([]);
 
   useEffect(() => {
+    const supabase = getSupabase();
     async function fetchCategories() {
       const { data, error } = await supabase.from('categories').select('*');
       if (!error) setCategories(data);
