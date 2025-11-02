@@ -30,9 +30,13 @@ export default function CategoryPage() {
       <p className='text-gray-500 mb-6'>{category.description}</p>
       <div className='grid gap-4 sm:grid-cols-2'>
         {bots.map(bot => (
-          <a key={bot.id} href={'/bot/' + bot.slug} className='p-4 border rounded-lg hover:shadow-md'>
-            <h2 className='font-semibold'>{bot.bot_name}</h2>
-            <p className='text-sm text-gray-600'>{bot.description}</p>
+          <a key={bot.id} href={'/bot/' + bot.alias} className='p-4 border rounded-lg hover:shadow-md'>
+            <div className='flex items-center gap-2 mb-2'>
+              <span className='text-2xl'>{bot.emoji}</span>
+              <h2 className='font-semibold text-lg'>{bot.name}</h2>
+            </div>
+            <p className='text-sm text-gray-600 mb-2'>{bot.tagline}</p>
+            <p className='text-xs text-gray-500'>{bot.description}</p>
           </a>
         ))}
       </div>
