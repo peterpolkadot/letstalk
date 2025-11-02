@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabaseClient';
+import { getSupabase } from '../../lib/supabaseClient';
 import Layout from '../../components/Layout';
 
 export default function CategoryPage() {
@@ -10,6 +10,7 @@ export default function CategoryPage() {
 
   useEffect(() => {
     if (!slug) return;
+    const supabase = getSupabase();
     async function fetchCategoryAndBots() {
       const { data: cat } = await supabase.from('categories').select('*').eq('slug', slug).single();
       setCategory(cat);
