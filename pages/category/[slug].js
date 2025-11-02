@@ -56,18 +56,45 @@ export default function CategoryPage() {
       </h1>
       <p className="text-gray-500 mb-6">{category.description}</p>
 
+      {/* 🔥 Animated Badge Styles */}
+      <style jsx>{`
+        @keyframes shimmer {
+          0% { background-position: -100px; }
+          100% { background-position: 200px; }
+        }
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.08); opacity: 0.85; }
+        }
+        .animate-shimmer {
+          background: linear-gradient(90deg, #fff2e0, #ffe4b3, #fff2e0);
+          background-size: 200px 100%;
+          animation: shimmer 2.5s infinite linear;
+        }
+        .animate-pulse {
+          animation: pulse 2.2s infinite ease-in-out;
+        }
+      `}</style>
+
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {bots.map((bot) => {
           const act = activity[bot.alias];
+          const isActive = act && act.messages_24h > 0;
           return (
             <a
               key={bot.id}
               href={'/bot/' + bot.alias}
               className="relative p-5 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-lg transition-all"
             >
-              {/* 🔥 Live badge */}
-              {act && (
-                <div className="absolute top-2 right-2 bg-orange-100 text-orange-700 px-2 py-1 rounded-full text-xs font-semibold shadow-sm">
+              {/* 🔥 Live animated badge */}
+              {isActive && (
+                <div
+                  className="absolute top-2 right-2 text-xs font-semibold text-orange-700 px-2 py-1 rounded-full shadow-sm animate-pulse animate-shimmer"
+                  style={{
+                    border: '1px solid rgba(255, 180, 60, 0.4)',
+                    backgroundColor: '#fff8ef'
+                  }}
+                >
                   🔥 {act.messages_24h} chats
                 </div>
               )}
