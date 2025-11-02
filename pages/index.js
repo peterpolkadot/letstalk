@@ -1,18 +1,20 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { createClient } from '@supabase/supabase-js';
 import Layout from '../components/Layout';
 
-export default function Home() {
-  const [categories, setCategories] = useState([]);
+export async function getServerSideProps() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_KEY;
+  const supabase = createClient(supabaseUrl, supabaseKey);
 
-  useEffect(() => {
-    async function fetchCategories() {
-      const { data, error } = await supabase.from('categories').select('*');
-      if (!error) setCategories(data);
-    }
-    fetchCategories();
-  }, []);
+  const { data: categories } = await supabase
+    .from('categories')
+    .select('*')
+    .order('id', { ascending: true });
 
+  return { props: { categories: categories || [] } };
+}
+
+export default function Home({ categories }) {
   return (
     <Layout>
       <h1 className="text-4xl font-bold text-center mb-8">Chatbot City 🏙️</h1>
