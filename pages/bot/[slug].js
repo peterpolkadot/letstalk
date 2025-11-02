@@ -1,6 +1,6 @@
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabaseClient';
+import { getSupabase } from '../../lib/supabaseClient';
 import Layout from '../../components/Layout';
 
 export default function BotPage() {
@@ -9,9 +9,14 @@ export default function BotPage() {
 
   useEffect(() => {
     if (!slug) return;
+    const supabase = getSupabase();
     async function fetchBot() {
-      const { data } = await supabase.from('bots').select('*').eq('slug', slug).single();
-      setBot(data);
+      const { data, error } = await supabase
+        .from('bots')
+        .select('*')
+        .eq('slug', slug)
+        .single();
+      if (!error) setBot(data);
     }
     fetchBot();
   }, [slug]);
