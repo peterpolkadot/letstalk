@@ -2,6 +2,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { getSupabase } from '../../lib/supabaseClient';
 import Layout from '../../components/Layout';
+import ChatInterface from '../../components/ChatInterface';
 
 export default function BotPage() {
   const { slug } = useRouter().query;
@@ -32,6 +33,11 @@ export default function BotPage() {
         </div>
         
         <p className='text-xl text-gray-600 italic mb-6'>{bot.tagline}</p>
+        
+        {/* CHAT INTERFACE - NEW! */}
+        <div className='mb-8'>
+          <ChatInterface botAlias={bot.alias} botName={bot.name} botEmoji={bot.emoji} />
+        </div>
         
         <div className='bg-blue-50 border-l-4 border-blue-500 p-4 mb-6'>
           <p className='text-gray-800'>{bot.description}</p>
