@@ -1,22 +1,24 @@
 
+import Link from 'next/link';
+
 export default function Breadcrumbs({ category, subcategory }) {
   return (
-    <nav className="text-sm mb-4 text-blue-600">
-      <a href="/" className="hover:underline">Home</a>
-      {category && (
-        <>
-          {' › '}
-          <a href={`/category/${category.slug}`} className="hover:underline">
-            {category.category_name}
-          </a>
-        </>
-      )}
-      {subcategory && (
-        <>
-          {' › '}
-          <span className="text-gray-500">{subcategory.subcategory_name}</span>
-        </>
-      )}
+    <nav className="text-sm text-gray-500 mb-4">
+      <ol className="list-reset flex">
+        <li><Link href="/">Home</Link></li>
+        {category && (
+          <>
+            <li><span className="mx-2">›</span></li>
+            <li><Link href={`/category/${category.slug}`}>{category.category_name}</Link></li>
+          </>
+        )}
+        {subcategory && (
+          <>
+            <li><span className="mx-2">›</span></li>
+            <li><Link href={`/subcategory/${subcategory.slug}`}>{subcategory.subcategory_name}</Link></li>
+          </>
+        )}
+      </ol>
     </nav>
   );
 }
