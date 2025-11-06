@@ -72,7 +72,7 @@ export default function CategoryPage() {
           <h2 className="text-xl font-semibold mb-3">Subcategories</h2>
           <div className="flex flex-wrap gap-2">
             {subcategories.map((sub) => (
-              <a
+              
                 key={sub.id}
                 href={'/subcategory/' + sub.slug}
                 className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm font-medium hover:bg-blue-200 transition"
@@ -90,7 +90,7 @@ export default function CategoryPage() {
           const act = activity[bot.alias];
           const isActive = act && act.messages_24h > 0;
           return (
-            <a
+            
               key={bot.id}
               href={'/bot/' + bot.alias}
               className="relative p-5 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-lg transition-all"

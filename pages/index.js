@@ -102,7 +102,7 @@ export default function Home() {
             const totalChats = categoryActivity[cat.id] || 0;
 
             return (
-              <a
+              
                 key={cat.id}
                 href={'/category/' + cat.slug}
                 className={`group relative p-6 border-2 border-gray-200 rounded-xl hover:shadow-lg transition-all text-center cursor-pointer ${isHot ? 'hot-cat' : 'hover:border-blue-500'}`}

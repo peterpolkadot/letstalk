@@ -43,7 +43,7 @@ export default function SubcategoryPage() {
           {subcategory.emoji || '💫'} {subcategory.subcategory_name}
         </h1>
         <p className="text-gray-500 mb-4">{subcategory.description}</p>
-        <a
+        
           href={'/category/' + subcategory.category_id}
           className="text-blue-600 text-sm hover:underline"
         >
@@ -56,7 +56,7 @@ export default function SubcategoryPage() {
           <p className="text-gray-500">No bots yet in this subcategory.</p>
         ) : (
           bots.map((bot) => (
-            <a
+            
               key={bot.id}
               href={'/bot/' + bot.alias}
               className="p-5 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-lg transition-all"
