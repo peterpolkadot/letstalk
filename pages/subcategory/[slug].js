@@ -14,16 +14,15 @@ export default function SubcategoryPage() {
     if (!slug) return;
     const supabase = getSupabase();
 
-    async function fetchSubcatAndBots() {
+    async function fetchData() {
       const { data: subcat } = await supabase.from('subcategories').select('*').eq('slug', slug).single();
       setSubcategory(subcat);
       if (!subcat) return;
-
       const { data: botsData } = await supabase.from('bots').select('*').eq('subcategory_id', subcat.id);
       setBots(botsData || []);
     }
 
-    fetchSubcatAndBots();
+    fetchData();
   }, [slug]);
 
   if (!subcategory) return <Layout>Loading...</Layout>;
@@ -34,18 +33,16 @@ export default function SubcategoryPage() {
   return (
     <Layout>
       <HeadMeta title={seoTitle} description={seoDesc} />
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">{subcategory.emoji || '💫'} {subcategory.subcategory_name}</h1>
-        <p className="text-gray-500 mb-4">{subcategory.description}</p>
-        <a href={'/category/' + subcategory.category_id} className="text-blue-600 text-sm hover:underline">← Back to Category</a>
-      </div>
+      <h1 className="text-3xl font-bold mb-2">{subcategory.emoji} {subcategory.subcategory_name}</h1>
+      <p className="text-gray-500 mb-4">{subcategory.description}</p>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {bots.length === 0 ? (
           <p className="text-gray-500">No bots yet in this subcategory.</p>
         ) : (
-          bots.map((bot) => (
-            <a key={bot.id} href={'/bot/' + bot.alias} className="p-5 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-lg transition-all">
+          bots.map(bot => (
+            <a key={bot.id} href={'/bot/' + bot.alias}
+               className="p-5 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:shadow-lg transition-all">
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-3xl">{bot.emoji}</span>
                 <div>
